@@ -701,6 +701,9 @@ export function Navigation() {
           <NavItemLink href="/profile" $isActive={pathname === "/profile" || pathname.startsWith("/u/")}>
             Profile
           </NavItemLink>
+          <NavItemLink href="/merge" $isActive={pathname === "/merge"}>
+            Merge
+          </NavItemLink>
           <NavItemBase
             as="a"
             href="https://github.com/junhoyeo/tokscale"
@@ -744,6 +747,9 @@ export function Navigation() {
           </DropdownNavLink>
           <DropdownNavLink href="/profile" $isActive={pathname === "/profile" || pathname.startsWith("/u/")} onClick={closeMobileMenu}>
             Profile
+          </DropdownNavLink>
+          <DropdownNavLink href="/merge" $isActive={pathname === "/merge"} onClick={closeMobileMenu}>
+            Merge
           </DropdownNavLink>
           <DropdownNavLinkExternal
             href="https://github.com/junhoyeo/tokscale"

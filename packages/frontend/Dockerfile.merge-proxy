@@ -1,0 +1,21 @@
+FROM oven/bun:1 AS deps
+WORKDIR /app
+
+COPY package.json bun.lock ./
+COPY packages/frontend/package.json packages/frontend/package.json
+
+RUN bun install --frozen-lockfile
+
+FROM oven/bun:1 AS runner
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json bun.lock ./
+COPY packages/frontend ./packages/frontend
+
+ENV NODE_ENV=production
+ENV TOKSCALE_MERGE_PROXY_PORT=3456
+
+EXPOSE 3456
+
+CMD ["bun", "run", "--cwd", "packages/frontend", "merge-proxy"]

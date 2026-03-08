@@ -1,0 +1,17 @@
+services:
+  tokscale-merge-proxy:
+    build:
+      context: .
+      dockerfile: packages/frontend/Dockerfile.merge-proxy
+    ports:
+      - "3456:3456"
+    environment:
+      TOKSCALE_MERGE_PROXY_PORT: 3456
+      TOKSCALE_FORWARD_SUBMIT_URL: ${TOKSCALE_FORWARD_SUBMIT_URL:-https://tokscale.ai/api/submit}
+      TOKSCALE_MERGE_STORAGE_DIR: /data/merge-cache
+      TOKSCALE_MERGE_TTL_HOURS: ${TOKSCALE_MERGE_TTL_HOURS:-336}
+    volumes:
+      - tokscale-merge-cache:/data/merge-cache
+
+volumes:
+  tokscale-merge-cache:

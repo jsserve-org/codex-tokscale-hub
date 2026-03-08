@@ -398,6 +398,13 @@ enum Commands {
             help = "Show what would be submitted without actually submitting"
         )]
         dry_run: bool,
+        #[arg(long, help = "Submit to a local merge proxy base URL")]
+        merge_proxy: Option<String>,
+        #[arg(
+            long,
+            help = "Tag this submission with a device id for downstream mergers"
+        )]
+        device: Option<String>,
     },
     #[command(about = "Capture subprocess output for token usage tracking")]
     Headless {
@@ -798,6 +805,8 @@ fn main() -> Result<()> {
             until,
             year,
             dry_run,
+            merge_proxy,
+            device,
         }) => {
             let clients = build_client_filter(ClientFlags {
                 opencode,
@@ -818,7 +827,7 @@ fn main() -> Result<()> {
             });
             let (since, until) = build_date_filter(today, week, month, since, until);
             let year = normalize_year_filter(today, week, month, year);
-            run_submit_command(clients, since, until, year, dry_run)
+            run_submit_command(clients, since, until, year, dry_run, merge_proxy, device)
         }
         Some(Commands::Headless {
             source,
@@ -2862,6 +2871,8 @@ fn run_submit_command(
     until: Option<String>,
     year: Option<String>,
     dry_run: bool,
+    merge_proxy: Option<String>,
+    device: Option<String>,
 ) -> Result<()> {
     use colored::Colorize;
     use std::io::IsTerminal;
@@ -2978,17 +2989,24 @@ fn run_submit_command(
     println!("{}", "  Submitting to server...".bright_black());
 
     let api_url = auth::get_api_base_url();
+    let submit_url = merge_proxy
+        .as_deref()
+        .map(|base| format!("{}/api/submit/merge", base.trim_end_matches('/')))
+        .unwrap_or_else(auth::get_submit_url);
 
     let submit_payload = to_ts_token_contribution_data(&graph_result);
 
     let response = rt.block_on(async {
-        reqwest::Client::new()
-            .post(format!("{}/api/submit", api_url))
+        let mut request = reqwest::Client::new()
+            .post(&submit_url)
             .header("Content-Type", "application/json")
-            .header("Authorization", format!("Bearer {}", credentials.token))
-            .json(&submit_payload)
-            .send()
-            .await
+            .header("Authorization", format!("Bearer {}", credentials.token));
+
+        if let Some(device) = device.as_deref() {
+            request = request.header("X-Tokscale-Device", device);
+        }
+
+        request.json(&submit_payload).send().await
     });
 
     match response {

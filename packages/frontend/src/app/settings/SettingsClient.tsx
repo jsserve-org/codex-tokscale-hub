@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { KeyIcon } from "@/components/ui/Icons";
 import { Navigation } from "@/components/layout/Navigation";
 import { Footer } from "@/components/layout/Footer";
+import Link from "next/link";
 
 interface User {
   id: string;
@@ -149,6 +150,20 @@ const InfoBanner = styled.div`
   font-size: 14px;
 `;
 
+const ActionLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--color-bg-elevated);
+  color: var(--color-fg-default);
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid var(--color-border-default);
+`;
+
 const AvatarImg = styled.img`
   border-radius: 6px;
   object-fit: cover;
@@ -262,6 +277,18 @@ export default function SettingsClient() {
           <InfoBanner style={{ marginTop: 16 }}>
             Profile information is synced from GitHub and cannot be edited here.
           </InfoBanner>
+        </Section>
+
+        <Section
+          style={{ backgroundColor: "var(--color-bg-default)", borderColor: "var(--color-border-default)" }}
+        >
+          <SectionTitle style={{ color: "var(--color-fg-default)" }}>
+            Merge Proxy
+          </SectionTitle>
+          <Description style={{ color: "var(--color-fg-muted)" }}>
+            Inspect cached device snapshots, copy multi-device CLI commands, and reset your local merge layer.
+          </Description>
+          <ActionLink href="/merge">Open merge dashboard</ActionLink>
         </Section>
 
         <Section

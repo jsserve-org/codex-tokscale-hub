@@ -414,9 +414,23 @@ tokscale submit --opencode --claude --since 2024-01-01
 # Preview what would be submitted (dry run)
 tokscale submit --dry-run
 
+# Submit through a merge proxy directly from the CLI
+tokscale submit --merge-proxy http://localhost:3456 --device laptop
+
+# Send submissions to a local merge proxy instead of tokscale.ai directly
+TOKSCALE_API_URL=http://localhost:3000 \
+TOKSCALE_SUBMIT_URL=http://localhost:3000/api/submit/merge \
+tokscale submit --device laptop
+
 # Logout
 tokscale logout
 ```
+
+For multi-device setups, run a local server that accepts `POST /api/submit/merge`, stores one payload per device, merges them, and then forwards the merged payload to `https://tokscale.ai/api/submit` using the same bearer token. The built-in merge route in the frontend package is a simple self-hosted version of that layer.
+
+If you want a lightweight standalone proxy without the full Next app, run `bun run --cwd packages/frontend merge-proxy` and then point your devices at `http://localhost:3456` with `tokscale submit --merge-proxy http://localhost:3456 --device <name>`.
+
+For a persistent home-server deployment, run `docker compose -f docker-compose.merge-proxy.yml up -d`. The proxy stores snapshots in a Docker volume and prunes stale devices after `TOKSCALE_MERGE_TTL_HOURS`.
 
 <img alt="CLI Submit" src="./.github/assets/cli-submit.png" />
 
@@ -495,6 +509,11 @@ Environment variables override config file values. For CI/CD or one-off use:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `TOKSCALE_NATIVE_TIMEOUT_MS` | `300000` (5 min) | Overrides `nativeTimeoutMs` config |
+| `TOKSCALE_API_URL` | `https://tokscale.ai` | Base URL for auth and profile links |
+| `TOKSCALE_SUBMIT_URL` | `${TOKSCALE_API_URL}/api/submit` | Override submit target for a local merge proxy |
+| `TOKSCALE_FORWARD_SUBMIT_URL` | `https://tokscale.ai/api/submit` | Upstream destination used by the local merge proxy |
+| `TOKSCALE_MERGE_STORAGE_DIR` | `~/.config/tokscale/merge-cache` | Local cache directory for per-device merge snapshots |
+| `TOKSCALE_MERGE_TTL_HOURS` | `336` | Time-to-live for cached device snapshots before they are pruned |
 
 ```bash
 # Example: Increase timeout for very large datasets

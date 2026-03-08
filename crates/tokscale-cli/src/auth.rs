@@ -117,6 +117,11 @@ pub fn get_api_base_url() -> String {
     std::env::var("TOKSCALE_API_URL").unwrap_or_else(|_| "https://tokscale.ai".to_string())
 }
 
+pub fn get_submit_url() -> String {
+    std::env::var("TOKSCALE_SUBMIT_URL")
+        .unwrap_or_else(|_| format!("{}/api/submit", get_api_base_url()))
+}
+
 fn get_device_name() -> String {
     let hostname = hostname::get()
         .ok()
